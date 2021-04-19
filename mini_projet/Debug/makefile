@@ -58,8 +58,8 @@ all: main-build
 main-build: mini_projet.elf secondary-outputs
 
 # Tool invocations
-mini_projet.elf: $(OBJS) $(USER_OBJS) C:\Users\thoma\STM32CubeIDE\workspace_1.5.1\mini_projet\STM32F746NGHX_FLASH.ld
-	arm-none-eabi-gcc -o "mini_projet.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\thoma\STM32CubeIDE\workspace_1.5.1\mini_projet\STM32F746NGHX_FLASH.ld" --specs=nosys.specs -Wl,-Map="mini_projet.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+mini_projet.elf: $(OBJS) $(USER_OBJS) C:\Users\thoma\Desktop\II_miniprojet\mini_projet\STM32F746NGHX_FLASH.ld
+	arm-none-eabi-gcc -o "mini_projet.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\thoma\Desktop\II_miniprojet\mini_projet\STM32F746NGHX_FLASH.ld" --specs=nosys.specs -Wl,-Map="mini_projet.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

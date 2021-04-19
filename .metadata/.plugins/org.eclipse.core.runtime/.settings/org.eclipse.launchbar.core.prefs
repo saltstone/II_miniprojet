@@ -1,0 +1,10 @@
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/arch=x86_64
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name=Local
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=win32
+configDescList=org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:TP3_services Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:TP4_synthese,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:TP ordonancement,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:TPordonancement Debug,org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:mini_projet Debug
+eclipse.preferences.version=1
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:TP3_services\ Debug/activeLaunchMode=run
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:TP3_services\ Debug/activeLaunchTarget=null\:---
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:TP4_synthese/activeLaunchMode=run
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:TP4_synthese/activeLaunchTarget=null\:---
+org.eclipse.cdt.dsf.gdb.gdbRemotedescriptorType\:mini_projet\ Debug/activeLaunchMode=debug

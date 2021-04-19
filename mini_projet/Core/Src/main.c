@@ -190,7 +190,11 @@ int main(void) {
 	BSP_LCD_FillRect(0, HAUTEUR_SOL, 480, 272 - HAUTEUR_SOL);
 
 	// ===============  creation des blocs ==================
-	blocs[1] = 1 + (10 << 8) + (5 << 4);
+	blocs[1] = 1 + (5 << 8) + (5 << 4);
+	blocs[2] = 1 + (8 << 8) + (5 << 4);
+	blocs[3] = 1 + (9 << 8) + (6 << 4);
+	blocs[4] = 1 + (2 << 8) + (5 << 4);
+
 
 	BSP_LCD_SetTextColor(LCD_COLOR_BROWN);
 	int iterateur_blocs = 0;
@@ -1458,10 +1462,12 @@ void player(void const *argument) {
 	uint8_t etat_bouton_saut = 1;
 	uint8_t etat_bouton_saut_old = 1;
 	float joueur_dy = 0;
-	float gravite = 0.666;
+	float joueur_dx = 0;
+	float joueur_dy_limite = -15;
+	float gravite = 0.6;
 
-	uint8_t joueur_height = 32;
-	uint8_t joueur_width = 32;
+	uint8_t joueur_height = 24;
+	uint8_t joueur_width = 24;
 	float joueur_x = 230;
 	float joueur_y = HAUTEUR_SOL - joueur_height;
 	float joueur_x_old = 230;
@@ -1476,9 +1482,7 @@ void player(void const *argument) {
 
 	void jump(uint8_t etat_saut) {
 		if (etat_saut == 0) {
-			joueur_dy = 10;
-		} else if (etat_saut == 1) {
-			joueur_dy = 10;
+			joueur_dy = 10.5;
 		}
 	}
 
@@ -1510,10 +1514,10 @@ void player(void const *argument) {
 
 		// ========== maj coord player ================
 
-		joueur_x = joueur_x - (joystick_x - 2077) * 20 * 270 / (1000 * 2077);
+		joueur_dx =  - (joystick_x - 2077) * 20 * 270 / (1000 * 2077);
 
-
-		joueur_dy = joueur_dy - gravite;
+		joueur_x = joueur_x + joueur_dx;
+		joueur_dy = (float)((joueur_dy - gravite)*(joueur_dy_limite<(joueur_dy - gravite)) + joueur_dy_limite*(joueur_dy_limite>=(joueur_dy - gravite)));
 		joueur_y = joueur_y - joueur_dy;
 		if (joueur_y >= HAUTEUR_SOL - joueur_height) {
 			joueur_y = HAUTEUR_SOL - joueur_height;
@@ -1525,33 +1529,48 @@ void player(void const *argument) {
 			joueur_x = 0;
 		else if (joueur_x + joueur_width >= 480)
 			joueur_x = 480 - joueur_width;
+
 		//================ collisions ============
+
 		for(iterateur_blocs_collision=0;iterateur_blocs_collision<sizeof(blocs)/sizeof(blocs[0]);iterateur_blocs_collision+=1)
 		{
-			bloc_x = ((blocs[iterateur_blocs_collision]>>8 & 255))*24;
-			bloc_y = ((blocs[iterateur_blocs_collision]>>4 & 15))*24;
-			if( (bloc_x < joueur_x + joueur_width ) && (bloc_x + blocs_size > joueur_x) && (bloc_y < joueur_y + joueur_height )&&( bloc_y + blocs_size > joueur_y))
+			bloc_x = ((blocs[iterateur_blocs_collision]>>8 & 255))*blocs_size;
+			bloc_y = ((blocs[iterateur_blocs_collision]>>4 & 15))*blocs_size;
+
+
+			if( !((bloc_x >= joueur_x + joueur_width )
+					||(bloc_x + blocs_size <= joueur_x)
+					|| (bloc_y >= joueur_y + joueur_height )
+					||( bloc_y + blocs_size <= joueur_y)))
 			{
-				if(joueur_y < bloc_y)
+
+				if(joueur_y + joueur_height + joueur_dy -2 < bloc_y)
 				{
 					joueur_dy=0;
 					joueur_y = bloc_y - joueur_height;
+					etat_saut = 0;
 				}
-				if(joueur_y > bloc_y)
+				else if(joueur_y > bloc_y + blocs_size - joueur_dy)
 				{
 					joueur_dy=0;
 					joueur_y = bloc_y + blocs_size;
 				}
-				if(joueur_x < bloc_x)
+				else if((joueur_x + joueur_width - 8 < bloc_x )&&(joueur_dx>0))
 				{
 
 					joueur_x = bloc_x - joueur_width;
 				}
-				if(joueur_x > bloc_x)
+				else if((joueur_x > bloc_x + blocs_size -8 )&&(joueur_dx<0))
 				{
 
 					joueur_x = bloc_x + blocs_size;
 				}
+
+
+
+
+
+
 			}
 		}
 
