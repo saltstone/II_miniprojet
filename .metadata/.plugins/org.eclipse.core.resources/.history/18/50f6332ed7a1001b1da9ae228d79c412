@@ -123,7 +123,6 @@ uint8_t joueur_width = 24;
 int position_joueur[2] = { 0 };
 
 uint16_t position_pieces[20] = { 0 };
-uint8_t vies = 3;
 
 /* USER CODE END 0 */
 
@@ -1529,8 +1528,6 @@ void player(void const *argument) {
 	int bloc_x;
 	int bloc_y;
 
-	char text[5];
-
 	void jump(uint8_t etat_saut) {
 		if (etat_saut == 0) {
 			joueur_dy = 10.5;
@@ -1622,17 +1619,15 @@ void player(void const *argument) {
 
 		//=============== affichage
 		BSP_LCD_SelectLayer(1);
+		BSP_LCD_SetTextColor(LCD_COLOR_RED);
+		BSP_LCD_FillRect((uint16_t) joueur_x, (uint16_t) joueur_y, joueur_width,
+				joueur_height);
 		BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
 		BSP_LCD_FillRect((uint16_t) joueur_x_old, (uint16_t) joueur_y_old,
 				joueur_width, joueur_height);
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
 		BSP_LCD_FillRect((uint16_t) joueur_x, (uint16_t) joueur_y, joueur_width,
 				joueur_height);
-
-		sprintf(text, "x %d", vies);
-		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		BSP_LCD_FillRect(433,5,blocs_size / 2, blocs_size / 2);
-		BSP_LCD_DisplayStringAt(450,6, (uint8_t*) text,LEFT_MODE );
 
 		taskENTER_CRITICAL();
 		position_joueur[0] = (uint16_t) joueur_x;
@@ -1723,12 +1718,7 @@ void pieces(void const *argument) {
 			}
 
 		}
-		taskENTER_CRITICAL();
-		if (piece_compteur >= 5){
-			piece_compteur = piece_compteur % 5;
-			vies = vies + 1;
-		}
-		taskEXIT_CRITICAL();
+
 		sprintf(text, "x %d", piece_compteur);
 		BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
 		BSP_LCD_FillRect(5,5,blocs_size / 2, blocs_size / 2);

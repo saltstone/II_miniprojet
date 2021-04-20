@@ -1,7 +1,7 @@
-14:37:24 **** Clean-only build of configuration Debug for project mini_projet ****
+14:55:15 **** Clean-only build of configuration Debug for project mini_projet ****
 make -j4 clean 
 rm -rf *
  
 
-14:37:25 Build Finished. 0 errors, 0 warnings. (took 540ms)
+14:55:15 Build Finished. 0 errors, 0 warnings. (took 436ms)
 

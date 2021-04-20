@@ -1529,8 +1529,6 @@ void player(void const *argument) {
 	int bloc_x;
 	int bloc_y;
 
-	char text[5];
-
 	void jump(uint8_t etat_saut) {
 		if (etat_saut == 0) {
 			joueur_dy = 10.5;
@@ -1631,8 +1629,8 @@ void player(void const *argument) {
 
 		sprintf(text, "x %d", vies);
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		BSP_LCD_FillRect(433,5,blocs_size / 2, blocs_size / 2);
-		BSP_LCD_DisplayStringAt(450,6, (uint8_t*) text,LEFT_MODE );
+		BSP_LCD_FillRect(450,5,blocs_size / 2, blocs_size / 2);
+		BSP_LCD_DisplayStringAt(460,6, (uint8_t*) text,LEFT_MODE );
 
 		taskENTER_CRITICAL();
 		position_joueur[0] = (uint16_t) joueur_x;
