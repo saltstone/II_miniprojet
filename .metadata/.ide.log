@@ -601,3 +601,7 @@
 2021-04-19 12:42:15,210 [INFO] ProjectBuilder:2555 - Suppression de : syscalls.c
 2021-04-19 12:42:15,210 [INFO] ProjectBuilder:2555 - Suppression de : sysmem.c
 2021-04-19 12:42:15,210 [INFO] ProjectBuilder:2555 - Suppression de : system_stm32f7xx.c
+2021-04-20 13:42:14,823 [INFO] Activator:170 - 
+
+
+2021-04-20 13:42:14,831 [INFO] Activator:171 - !SESSION log4j initialized
