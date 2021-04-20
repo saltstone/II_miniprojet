@@ -1722,7 +1722,7 @@ void pieces(void const *argument) {
 		sprintf(text, "x %d", piece_compteur);
 		BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
 		BSP_LCD_FillRect(5,5,blocs_size / 2, blocs_size / 2);
-		BSP_LCD_DisplayStringAt(blocs_size,6, (uint8_t*) text,LEFT_MODE );
+		BSP_LCD_DisplayStringAt(blocs_size,5, (uint8_t*) text,LEFT_MODE );
 
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}

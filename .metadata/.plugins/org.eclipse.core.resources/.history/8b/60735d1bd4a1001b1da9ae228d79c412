@@ -122,7 +122,7 @@ uint8_t joueur_height = 24;
 uint8_t joueur_width = 24;
 int position_joueur[2] = { 0 };
 
-uint16_t position_pieces[20] = { 0 };
+uint16_t position_pieces[10] = { 0 };
 
 /* USER CODE END 0 */
 
@@ -233,10 +233,6 @@ int main(void) {
 	position_pieces[3] = 1 + (8 << 8) + (2 << 4);
 	position_pieces[4] = 1 + (9 << 8) + (2 << 4);
 	position_pieces[5] = 1 + (10 << 8) + (2 << 4);
-
-	position_pieces[6] = 1 + (11 << 8) + (5 << 4);
-	position_pieces[7] = 1 + (12 << 8) + (5 << 4);
-	position_pieces[8] = 1 + (13 << 8) + (5 << 4);
 
 	position_pieces[6] = 1 + (11 << 8) + (5 << 4);
 	position_pieces[7] = 1 + (12 << 8) + (5 << 4);
@@ -1718,11 +1714,8 @@ void pieces(void const *argument) {
 			}
 
 		}
-
-		sprintf(text, "x %d", piece_compteur);
-		BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-		BSP_LCD_FillRect(5,5,blocs_size / 2, blocs_size / 2);
-		BSP_LCD_DisplayStringAt(blocs_size,6, (uint8_t*) text,LEFT_MODE );
+		sprintf(text, "Piece x %d", piece_compteur);
+		BSP_LCD_DisplayStringAtLine(5, (uint8_t*) text);
 
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}
