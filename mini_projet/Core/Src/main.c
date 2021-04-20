@@ -120,7 +120,7 @@ int blocs_size = 24;
 
 uint8_t joueur_height = 24;
 uint8_t joueur_width = 24;
-int position_joueur[2] = { 0 };
+int position_joueur[4] = { 0 };
 
 uint16_t position_pieces[20] = { 0 };
 uint8_t vies = 3;
@@ -239,14 +239,16 @@ int main(void) {
 	position_pieces[7] = 1 + (12 << 8) + (5 << 4);
 	position_pieces[8] = 1 + (13 << 8) + (5 << 4);
 
-	position_pieces[6] = 1 + (11 << 8) + (5 << 4);
-	position_pieces[7] = 1 + (12 << 8) + (5 << 4);
-	position_pieces[8] = 1 + (13 << 8) + (5 << 4);
+	position_pieces[9] = 2 + (9 << 8) + (8 << 4);
+	position_pieces[10] = 1 + (17 << 8) + (8 << 4);
+	position_pieces[11] = 1 + (15 << 8) + (8 << 4);
 	for (iterateur_blocs = 0;
 			iterateur_blocs
 			< sizeof(position_pieces) / sizeof(position_pieces[0]);
 			iterateur_blocs += 1) {
 		if ((position_pieces[iterateur_blocs] & (15)) != 0) {
+			if ((position_pieces[iterateur_blocs] & (15)) == 2)BSP_LCD_SetTextColor(LCD_COLOR_RED);
+			else if ((position_pieces[iterateur_blocs] & (15)) == 1)BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
 			BSP_LCD_FillRect(
 					((position_pieces[iterateur_blocs] >> 8) & (255))
 					* (blocs_size) + blocs_size / 4,
@@ -1517,10 +1519,10 @@ void player(void const *argument) {
 	float joueur_dy_limite = -15;
 	float gravite = 0.6;
 
-	float joueur_x = 230;
+	float joueur_x = 0;
 	float joueur_y = HAUTEUR_SOL - joueur_height;
-	float joueur_x_old = 230;
-	float joueur_y_old = 232;
+	float joueur_x_old = 0;
+	float joueur_y_old = HAUTEUR_SOL - joueur_height;
 
 	uint16_t joystick_x = 2077;
 	//uint16_t joystick_y = 2077;
@@ -1540,8 +1542,10 @@ void player(void const *argument) {
 	/* Infinite loop */
 	for (;;) {
 
-		joueur_x_old = joueur_x;
-		joueur_y_old = joueur_y;
+		joueur_x_old = position_joueur[0];
+		joueur_y_old = position_joueur[1];
+		joueur_x = position_joueur[0];
+		joueur_y = position_joueur[1];
 		etat_bouton_saut_old = etat_bouton_saut;
 
 		etat_bouton_saut = HAL_GPIO_ReadPin(BP2_GPIO_Port, BP2_Pin);
@@ -1621,13 +1625,7 @@ void player(void const *argument) {
 		}
 
 		//=============== affichage
-		BSP_LCD_SelectLayer(1);
-		BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
-		BSP_LCD_FillRect((uint16_t) joueur_x_old, (uint16_t) joueur_y_old,
-				joueur_width, joueur_height);
-		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		BSP_LCD_FillRect((uint16_t) joueur_x, (uint16_t) joueur_y, joueur_width,
-				joueur_height);
+
 
 		sprintf(text, "x %d", vies);
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
@@ -1637,8 +1635,19 @@ void player(void const *argument) {
 		taskENTER_CRITICAL();
 		position_joueur[0] = (uint16_t) joueur_x;
 		position_joueur[1] = (uint16_t) joueur_y;
+		position_joueur[2] = (uint16_t) joueur_x_old;
+		position_joueur[3] = (uint16_t) joueur_y_old;
 		taskEXIT_CRITICAL();
 
+		BSP_LCD_SelectLayer(1);
+		taskENTER_CRITICAL();
+		BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
+		BSP_LCD_FillRect((uint16_t) position_joueur[2], (uint16_t) position_joueur[3],
+				joueur_width, joueur_height);
+		BSP_LCD_SetTextColor(LCD_COLOR_RED);
+		BSP_LCD_FillRect((uint16_t) position_joueur[0], (uint16_t) position_joueur[1], joueur_width,
+				joueur_height);
+		taskEXIT_CRITICAL();
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
 	}
@@ -1710,9 +1719,23 @@ void pieces(void const *argument) {
 					|| (piece_x + blocs_size / 2 <= joueur_x)
 					|| (piece_y >= joueur_y + joueur_height)
 					|| (piece_y + blocs_size / 2 <= joueur_y)))
-					&& (position_pieces[iterateur_piece_collision] & 1)) {
-				piece_compteur = piece_compteur+1;
-				position_pieces[iterateur_piece_collision] = position_pieces[iterateur_piece_collision] - 1;
+					&& ((position_pieces[iterateur_piece_collision] & 15) != 0)) {
+
+				if ((position_pieces[iterateur_piece_collision] & (15)) == 1) piece_compteur = piece_compteur+1;
+				else if ((position_pieces[iterateur_piece_collision] & (15)) == 2)
+				{
+					taskENTER_CRITICAL();
+					//etat_joueur = 2;
+					joueur_height = 32;
+					position_joueur[1] -= 8;
+					position_joueur[3] -= 8;
+					taskEXIT_CRITICAL();
+					position_pieces[iterateur_piece_collision] = position_pieces[iterateur_piece_collision]-1;
+				}
+
+
+				position_pieces[iterateur_piece_collision] = position_pieces[iterateur_piece_collision]- 1;
+
 				BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
 				BSP_LCD_FillRect(
 									((position_pieces[iterateur_piece_collision] >> 8) & (255))
