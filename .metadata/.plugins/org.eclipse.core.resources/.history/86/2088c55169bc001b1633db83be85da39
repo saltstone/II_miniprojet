@@ -128,8 +128,7 @@ uint8_t mechant_height = 24;
 uint8_t mechant_width = 24;
 
 uint16_t position_pieces[20] = { 0 };
-int8_t vies = 3;
-char damage_cooldown = 0;
+uint8_t vies = 3;
 
 /* USER CODE END 0 */
 
@@ -841,7 +840,7 @@ static void MX_RTC_Init(void) {
 	/** Enable the TimeStamp
 	 */
 	if (HAL_RTCEx_SetTimeStamp(&hrtc, RTC_TIMESTAMPEDGE_RISING,
-	RTC_TIMESTAMPPIN_POS1) != HAL_OK) {
+			RTC_TIMESTAMPPIN_POS1) != HAL_OK) {
 		Error_Handler();
 	}
 	/* USER CODE BEGIN RTC_Init 2 */
@@ -1212,7 +1211,7 @@ static void MX_USART1_UART_Init(void) {
 			| UART_ADVFEATURE_DMADISABLEONERROR_INIT;
 	huart1.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
 	huart1.AdvancedInit.DMADisableonRxError =
-	UART_ADVFEATURE_DMA_DISABLEONRXERROR;
+			UART_ADVFEATURE_DMA_DISABLEONRXERROR;
 	if (HAL_UART_Init(&huart1) != HAL_OK) {
 		Error_Handler();
 	}
@@ -1342,7 +1341,7 @@ static void MX_GPIO_Init(void) {
 
 	/*Configure GPIO pin Output Level */
 	HAL_GPIO_WritePin(GPIOH,
-	LED13_Pin | LED17_Pin | LED11_Pin | LED12_Pin | LED2_Pin | LED18_Pin,
+			LED13_Pin | LED17_Pin | LED11_Pin | LED12_Pin | LED2_Pin | LED18_Pin,
 			GPIO_PIN_RESET);
 
 	/*Configure GPIO pin Output Level */
@@ -1536,8 +1535,6 @@ void player(void const *argument) {
 	float joueur_x_old = 0;
 	float joueur_y_old = HAUTEUR_SOL - joueur_height;
 
-	uint16_t cooldown_counter = 0;
-
 	uint16_t joystick_x = 2077;
 	//uint16_t joystick_y = 2077;
 
@@ -1656,19 +1653,7 @@ void player(void const *argument) {
 		BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
 		BSP_LCD_FillRect((uint16_t) position_joueur[2],
 				(uint16_t) position_joueur[3], joueur_width, joueur_height);
-		if (damage_cooldown == 1 && cooldown_counter % 2 == 0
-				&& cooldown_counter < 100) {
-			BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
-			cooldown_counter += 1;
-		} else if (damage_cooldown == 1 && cooldown_counter % 2 == 1
-				&& cooldown_counter < 100) {
-			BSP_LCD_SetTextColor(LCD_COLOR_RED);
-			cooldown_counter += 1;
-		} else if (damage_cooldown == 0 || cooldown_counter >= 100) {
-			BSP_LCD_SetTextColor(LCD_COLOR_RED);
-			cooldown_counter = 0;
-			damage_cooldown = 0;
-		}
+		BSP_LCD_SetTextColor(LCD_COLOR_RED);
 		BSP_LCD_FillRect((uint16_t) position_joueur[0],
 				(uint16_t) position_joueur[1], joueur_width, joueur_height);
 		taskEXIT_CRITICAL();
@@ -1803,6 +1788,7 @@ void badguy(void const *argument) {
 	const TickType_t xFrequency = 20;
 	xLastWakeTime = xTaskGetTickCount();
 
+
 	//initialisation des variables du mechant
 
 	float mechant_dy = 0;
@@ -1811,8 +1797,9 @@ void badguy(void const *argument) {
 	float mechant_dy_limite = -15;
 	float gravite = 0.6;
 
-	float mechant_x = 300;
-	;
+
+
+	float mechant_x = 300;;
 	float mechant_y = HAUTEUR_SOL - mechant_height;
 	float mechant_x_old = 0;
 	float mechant_y_old = HAUTEUR_SOL - mechant_height;
@@ -1823,6 +1810,7 @@ void badguy(void const *argument) {
 
 	char text[5];
 
+
 	/* Infinite loop */
 	for (;;) {
 
@@ -1830,21 +1818,25 @@ void badguy(void const *argument) {
 		mechant_y_old = mechant_y;
 		// ========== maj coord player ================
 
+
+
 		mechant_x = mechant_x + mechant_dx;
-		mechant_dy = (float) ((mechant_dy - gravite)
-				* (mechant_dy_limite < (mechant_dy - gravite))
-				+ mechant_dy_limite
-						* (mechant_dy_limite >= (mechant_dy - gravite)));
+		mechant_dy =
+				(float) ((mechant_dy - gravite)
+						* (mechant_dy_limite < (mechant_dy - gravite))
+						+ mechant_dy_limite
+								* (mechant_dy_limite >= (mechant_dy - gravite)));
 		mechant_y = mechant_y - mechant_dy;
 		if (mechant_y >= HAUTEUR_SOL - mechant_height) {
 			mechant_y = HAUTEUR_SOL - mechant_height;
 		}
 
 		// bounds of screen
-		if (mechant_x <= 0) {
+		if (mechant_x <= 0){
 			mechant_x = 0;
 			mechant_dx = 800 * 20 * 270 / (1000 * 2077);
-		} else if (mechant_x + mechant_width >= 480) {
+		}
+		else if (mechant_x + mechant_width >= 480){
 			mechant_x = 480 - mechant_width;
 			mechant_dx = -800 * 20 * 270 / (1000 * 2077);
 		}
@@ -1885,28 +1877,22 @@ void badguy(void const *argument) {
 
 		//=============== affichage
 
+
+
 		BSP_LCD_SelectLayer(1);
 		taskENTER_CRITICAL();
 		BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
-		BSP_LCD_FillRect((uint16_t) mechant_x_old, (uint16_t) mechant_y_old,
-				mechant_width, mechant_height);
+		BSP_LCD_FillRect((uint16_t) mechant_x_old,
+				(uint16_t) mechant_y_old, mechant_width, mechant_height);
 		BSP_LCD_SetTextColor(LCD_COLOR_BROWN);
-		BSP_LCD_FillRect((uint16_t) mechant_x, (uint16_t) mechant_y,
-				mechant_width, mechant_height);
+		BSP_LCD_FillRect((uint16_t) mechant_x,
+				(uint16_t) mechant_y, mechant_width, mechant_height);
 		if (!((position_joueur[0] >= mechant_x + mechant_width)
-				|| (position_joueur[0] + joueur_width <= mechant_x)
+				|| (position_joueur[0] + player_width <= mechant_x)
 				|| (position_joueur[1] >= mechant_y + mechant_height)
 				|| (position_joueur[1] + joueur_height <= mechant_y))) {
-			if (damage_cooldown == 0) {
-				vies = vies - 1;
-				damage_cooldown = 1;
-			}
+			vie = vie-1;
 		}
-		if(vies < 0){
-			vTaskDelete(PlayerHandle);
-			BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
-			BSP_LCD_FillRect((uint16_t) position_joueur[0], (uint16_t) position_joueur[1],
-					joueur_width, joueur_height);}
 		taskEXIT_CRITICAL();
 
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);

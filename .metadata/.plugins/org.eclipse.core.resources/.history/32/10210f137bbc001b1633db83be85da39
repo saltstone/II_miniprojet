@@ -1904,7 +1904,7 @@ void badguy(void const *argument) {
 		}
 		if(vies < 0){
 			vTaskDelete(PlayerHandle);
-			BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
+			SP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
 			BSP_LCD_FillRect((uint16_t) position_joueur[0], (uint16_t) position_joueur[1],
 					joueur_width, joueur_height);}
 		taskEXIT_CRITICAL();

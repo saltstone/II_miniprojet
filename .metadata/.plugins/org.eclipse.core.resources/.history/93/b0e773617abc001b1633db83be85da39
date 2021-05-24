@@ -128,7 +128,7 @@ uint8_t mechant_height = 24;
 uint8_t mechant_width = 24;
 
 uint16_t position_pieces[20] = { 0 };
-int8_t vies = 3;
+uint8_t vies = 3;
 char damage_cooldown = 0;
 
 /* USER CODE END 0 */
@@ -1667,7 +1667,7 @@ void player(void const *argument) {
 		} else if (damage_cooldown == 0 || cooldown_counter >= 100) {
 			BSP_LCD_SetTextColor(LCD_COLOR_RED);
 			cooldown_counter = 0;
-			damage_cooldown = 0;
+			damage_cooldown == 0;
 		}
 		BSP_LCD_FillRect((uint16_t) position_joueur[0],
 				(uint16_t) position_joueur[1], joueur_width, joueur_height);
@@ -1902,11 +1902,6 @@ void badguy(void const *argument) {
 				damage_cooldown = 1;
 			}
 		}
-		if(vies < 0){
-			vTaskDelete(PlayerHandle);
-			BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
-			BSP_LCD_FillRect((uint16_t) position_joueur[0], (uint16_t) position_joueur[1],
-					joueur_width, joueur_height);}
 		taskEXIT_CRITICAL();
 
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
