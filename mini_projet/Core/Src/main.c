@@ -77,6 +77,7 @@ osThreadId defaultTaskHandle;
 osThreadId PlayerHandle;
 osThreadId Game_overHandle;
 osThreadId PiecesHandle;
+osThreadId BadGuyHandle;
 osMutexId myMutex01Handle;
 /* USER CODE BEGIN PV */
 /* USER CODE END PV */
@@ -106,6 +107,7 @@ void StartDefaultTask(void const *argument);
 void player(void const *argument);
 void game_over(void const *argument);
 void pieces(void const *argument);
+void badguy(void const *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -121,6 +123,9 @@ int blocs_size = 24;
 uint8_t joueur_height = 24;
 uint8_t joueur_width = 24;
 int position_joueur[4] = { 0 };
+
+uint8_t mechant_height = 24;
+uint8_t mechant_width = 24;
 
 uint16_t position_pieces[20] = { 0 };
 uint8_t vies = 3;
@@ -186,7 +191,7 @@ int main(void) {
 	BSP_LCD_Init();
 	BSP_LCD_LayerDefaultInit(0, LCD_FB_START_ADDRESS);
 	BSP_LCD_LayerDefaultInit(1,
-			LCD_FB_START_ADDRESS + BSP_LCD_GetXSize() * BSP_LCD_GetYSize() * 4);
+	LCD_FB_START_ADDRESS + BSP_LCD_GetXSize() * BSP_LCD_GetYSize() * 4);
 	BSP_LCD_DisplayOn();
 	BSP_LCD_SelectLayer(1);
 	BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
@@ -244,17 +249,19 @@ int main(void) {
 	position_pieces[11] = 1 + (15 << 8) + (8 << 4);
 	for (iterateur_blocs = 0;
 			iterateur_blocs
-			< sizeof(position_pieces) / sizeof(position_pieces[0]);
+					< sizeof(position_pieces) / sizeof(position_pieces[0]);
 			iterateur_blocs += 1) {
 		if ((position_pieces[iterateur_blocs] & (15)) != 0) {
-			if ((position_pieces[iterateur_blocs] & (15)) == 2)BSP_LCD_SetTextColor(LCD_COLOR_RED);
-			else if ((position_pieces[iterateur_blocs] & (15)) == 1)BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+			if ((position_pieces[iterateur_blocs] & (15)) == 2)
+				BSP_LCD_SetTextColor(LCD_COLOR_RED);
+			else if ((position_pieces[iterateur_blocs] & (15)) == 1)
+				BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
 			BSP_LCD_FillRect(
 					((position_pieces[iterateur_blocs] >> 8) & (255))
-					* (blocs_size) + blocs_size / 4,
+							* (blocs_size) + blocs_size / 4,
 					blocs_size
-					* ((position_pieces[iterateur_blocs] >> 4) & (15))
-					+ blocs_size / 4, blocs_size / 2, blocs_size / 2);
+							* ((position_pieces[iterateur_blocs] >> 4) & (15))
+							+ blocs_size / 4, blocs_size / 2, blocs_size / 2);
 		}
 	}
 
@@ -299,6 +306,10 @@ int main(void) {
 	/* definition and creation of Pieces */
 	osThreadDef(Pieces, pieces, osPriorityNormal, 0, 1024);
 	PiecesHandle = osThreadCreate(osThread(Pieces), NULL);
+
+	/* definition and creation of BadGuy */
+	osThreadDef(BadGuy, badguy, osPriorityNormal, 0, 1024);
+	BadGuyHandle = osThreadCreate(osThread(BadGuy), NULL);
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -1530,7 +1541,6 @@ void player(void const *argument) {
 	int iterateur_blocs_collision = 0;
 	int bloc_x;
 	int bloc_y;
-
 	char text[5];
 
 	void jump(uint8_t etat_saut) {
@@ -1576,7 +1586,7 @@ void player(void const *argument) {
 				(float) ((joueur_dy - gravite)
 						* (joueur_dy_limite < (joueur_dy - gravite))
 						+ joueur_dy_limite
-						* (joueur_dy_limite >= (joueur_dy - gravite)));
+								* (joueur_dy_limite >= (joueur_dy - gravite)));
 		joueur_y = joueur_y - joueur_dy;
 		if (joueur_y >= HAUTEUR_SOL - joueur_height) {
 			joueur_y = HAUTEUR_SOL - joueur_height;
@@ -1595,9 +1605,9 @@ void player(void const *argument) {
 				iterateur_blocs_collision < sizeof(blocs) / sizeof(blocs[0]);
 				iterateur_blocs_collision += 1) {
 			bloc_x = ((blocs[iterateur_blocs_collision] >> 8 & 255))
-							* blocs_size;
+					* blocs_size;
 			bloc_y = ((blocs[iterateur_blocs_collision] >> 4 & 15))
-							* blocs_size;
+					* blocs_size;
 
 			if (!((bloc_x >= joueur_x + joueur_width)
 					|| (bloc_x + blocs_size <= joueur_x)
@@ -1626,11 +1636,10 @@ void player(void const *argument) {
 
 		//=============== affichage
 
-
 		sprintf(text, "x %d", vies);
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		BSP_LCD_FillRect(433,5,blocs_size / 2, blocs_size / 2);
-		BSP_LCD_DisplayStringAt(450,6, (uint8_t*) text,LEFT_MODE );
+		BSP_LCD_FillRect(433, 5, blocs_size / 2, blocs_size / 2);
+		BSP_LCD_DisplayStringAt(450, 6, (uint8_t*) text, LEFT_MODE);
 
 		taskENTER_CRITICAL();
 		position_joueur[0] = (uint16_t) joueur_x;
@@ -1642,11 +1651,11 @@ void player(void const *argument) {
 		BSP_LCD_SelectLayer(1);
 		taskENTER_CRITICAL();
 		BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
-		BSP_LCD_FillRect((uint16_t) position_joueur[2], (uint16_t) position_joueur[3],
-				joueur_width, joueur_height);
+		BSP_LCD_FillRect((uint16_t) position_joueur[2],
+				(uint16_t) position_joueur[3], joueur_width, joueur_height);
 		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		BSP_LCD_FillRect((uint16_t) position_joueur[0], (uint16_t) position_joueur[1], joueur_width,
-				joueur_height);
+		BSP_LCD_FillRect((uint16_t) position_joueur[0],
+				(uint16_t) position_joueur[1], joueur_width, joueur_height);
 		taskEXIT_CRITICAL();
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
@@ -1706,12 +1715,12 @@ void pieces(void const *argument) {
 
 		for (iterateur_piece_collision = 0;
 				iterateur_piece_collision
-				< sizeof(position_pieces) / sizeof(position_pieces[0]);
+						< sizeof(position_pieces) / sizeof(position_pieces[0]);
 				iterateur_piece_collision += 1) {
 			piece_x = ((position_pieces[iterateur_piece_collision] >> 8 & 255))
-							* blocs_size + blocs_size / 4;
+					* blocs_size + blocs_size / 4;
 			piece_y = ((position_pieces[iterateur_piece_collision] >> 4 & 15))
-							* blocs_size + blocs_size / 4;
+					* blocs_size + blocs_size / 4;
 			joueur_x = position_joueur[0];
 			joueur_y = position_joueur[1];
 
@@ -1721,45 +1730,171 @@ void pieces(void const *argument) {
 					|| (piece_y + blocs_size / 2 <= joueur_y)))
 					&& ((position_pieces[iterateur_piece_collision] & 15) != 0)) {
 
-				if ((position_pieces[iterateur_piece_collision] & (15)) == 1) piece_compteur = piece_compteur+1;
-				else if ((position_pieces[iterateur_piece_collision] & (15)) == 2)
-				{
+				if ((position_pieces[iterateur_piece_collision] & (15)) == 1)
+					piece_compteur = piece_compteur + 1;
+				else if ((position_pieces[iterateur_piece_collision] & (15))
+						== 2) {
 					taskENTER_CRITICAL();
 					//etat_joueur = 2;
 					joueur_height = 32;
 					position_joueur[1] -= 8;
 					position_joueur[3] -= 8;
 					taskEXIT_CRITICAL();
-					position_pieces[iterateur_piece_collision] = position_pieces[iterateur_piece_collision]-1;
+					position_pieces[iterateur_piece_collision] =
+							position_pieces[iterateur_piece_collision] - 1;
 				}
 
-
-				position_pieces[iterateur_piece_collision] = position_pieces[iterateur_piece_collision]- 1;
+				position_pieces[iterateur_piece_collision] =
+						position_pieces[iterateur_piece_collision] - 1;
 
 				BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
 				BSP_LCD_FillRect(
-									((position_pieces[iterateur_piece_collision] >> 8) & (255))
-									* (blocs_size) + blocs_size / 4,
-									blocs_size
-									* ((position_pieces[iterateur_piece_collision] >> 4) & (15))
-									+ blocs_size / 4, blocs_size / 2, blocs_size / 2);
+						((position_pieces[iterateur_piece_collision] >> 8)
+								& (255)) * (blocs_size) + blocs_size / 4,
+						blocs_size
+								* ((position_pieces[iterateur_piece_collision]
+										>> 4) & (15)) + blocs_size / 4,
+						blocs_size / 2, blocs_size / 2);
 			}
 
 		}
 		taskENTER_CRITICAL();
-		if (piece_compteur >= 5){
+		if (piece_compteur >= 5) {
 			piece_compteur = piece_compteur % 5;
 			vies = vies + 1;
 		}
 		taskEXIT_CRITICAL();
 		sprintf(text, "x %d", piece_compteur);
 		BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-		BSP_LCD_FillRect(5,5,blocs_size / 2, blocs_size / 2);
-		BSP_LCD_DisplayStringAt(blocs_size,6, (uint8_t*) text,LEFT_MODE );
+		BSP_LCD_FillRect(5, 5, blocs_size / 2, blocs_size / 2);
+		BSP_LCD_DisplayStringAt(blocs_size, 6, (uint8_t*) text, LEFT_MODE);
 
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}
 	/* USER CODE END pieces */
+}
+
+/* USER CODE BEGIN Header_badguy */
+/**
+ * @brief Function implementing the BadGuy thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_badguy */
+void badguy(void const *argument) {
+	/* USER CODE BEGIN badguy */
+	//initialisation du sleep
+	TickType_t xLastWakeTime;
+	const TickType_t xFrequency = 20;
+	xLastWakeTime = xTaskGetTickCount();
+
+
+	//initialisation des variables du mechant
+
+	float mechant_dy = 0;
+	float mechant_dx = 0;
+	mechant_dx = -800 * 20 * 270 / (1000 * 2077);
+	float mechant_dy_limite = -15;
+	float gravite = 0.6;
+
+
+
+	float mechant_x = 300;;
+	float mechant_y = HAUTEUR_SOL - mechant_height;
+	float mechant_x_old = 0;
+	float mechant_y_old = HAUTEUR_SOL - mechant_height;
+
+	int iterateur_blocs_collision = 0;
+	int bloc_x;
+	int bloc_y;
+
+	char text[5];
+
+
+	/* Infinite loop */
+	for (;;) {
+
+		mechant_x_old = mechant_x;
+		mechant_y_old = mechant_y;
+		// ========== maj coord player ================
+
+
+
+		mechant_x = mechant_x + mechant_dx;
+		mechant_dy =
+				(float) ((mechant_dy - gravite)
+						* (mechant_dy_limite < (mechant_dy - gravite))
+						+ mechant_dy_limite
+								* (mechant_dy_limite >= (mechant_dy - gravite)));
+		mechant_y = mechant_y - mechant_dy;
+		if (mechant_y >= HAUTEUR_SOL - mechant_height) {
+			mechant_y = HAUTEUR_SOL - mechant_height;
+		}
+
+		// bounds of screen
+		if (mechant_x <= 0){
+			mechant_x = 0;
+			mechant_dx = 800 * 20 * 270 / (1000 * 2077);
+		}
+		else if (mechant_x + mechant_width >= 480){
+			mechant_x = 480 - mechant_width;
+			mechant_dx = -800 * 20 * 270 / (1000 * 2077);
+		}
+
+		//================ collisions ============
+
+		for (iterateur_blocs_collision = 0;
+				iterateur_blocs_collision < sizeof(blocs) / sizeof(blocs[0]);
+				iterateur_blocs_collision += 1) {
+			bloc_x = ((blocs[iterateur_blocs_collision] >> 8 & 255))
+					* blocs_size;
+			bloc_y = ((blocs[iterateur_blocs_collision] >> 4 & 15))
+					* blocs_size;
+
+			if (!((bloc_x >= mechant_x + mechant_width)
+					|| (bloc_x + blocs_size <= mechant_x)
+					|| (bloc_y >= mechant_y + mechant_height)
+					|| (bloc_y + blocs_size <= mechant_y))) {
+
+				if (mechant_y + mechant_height + mechant_dy - 2 < bloc_y) {
+					mechant_dy = 0;
+					mechant_y = bloc_y - mechant_height;
+				} else if (mechant_y > bloc_y + blocs_size - mechant_dy) {
+					mechant_dy = 0;
+					mechant_y = bloc_y + blocs_size;
+				} else if ((mechant_x + mechant_width - 8 < bloc_x)
+						&& (mechant_dx > 0)) {
+
+					mechant_x = bloc_x - mechant_width;
+				} else if ((mechant_x > bloc_x + blocs_size - 8)
+						&& (mechant_dx < 0)) {
+
+					mechant_x = bloc_x + blocs_size;
+				}
+
+			}
+		}
+
+		//=============== affichage
+
+		sprintf(text, "x %d", vies);
+		BSP_LCD_SetTextColor(LCD_COLOR_RED);
+		BSP_LCD_FillRect(433, 5, blocs_size / 2, blocs_size / 2);
+		BSP_LCD_DisplayStringAt(450, 6, (uint8_t*) text, LEFT_MODE);
+
+		BSP_LCD_SelectLayer(1);
+		taskENTER_CRITICAL();
+		BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
+		BSP_LCD_FillRect((uint16_t) mechant_x_old,
+				(uint16_t) mechant_y_old, mechant_width, mechant_height);
+		BSP_LCD_SetTextColor(LCD_COLOR_BROWN);
+		BSP_LCD_FillRect((uint16_t) mechant_x,
+				(uint16_t) mechant_y, mechant_width, mechant_height);
+		taskEXIT_CRITICAL();
+		vTaskDelayUntil(&xLastWakeTime, xFrequency);
+
+	}
+	/* USER CODE END badguy */
 }
 
 /**
@@ -1797,18 +1932,18 @@ void Error_Handler(void) {
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
