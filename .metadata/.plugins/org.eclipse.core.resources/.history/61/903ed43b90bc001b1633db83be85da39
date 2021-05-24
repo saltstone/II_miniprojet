@@ -1668,16 +1668,14 @@ void game_over(void const *argument) {
 	const TickType_t xFrequency = 20;
 	xLastWakeTime = xTaskGetTickCount();
 
-	BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
-
 	/* Infinite loop */
 	for (;;) {
 		if(game_state == 0)
 		{
-
+			BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
 			BSP_LCD_SetFont(&Font24);
 			BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-			BSP_LCD_DisplayStringAt(145, 130, (uint8_t*) "BP1 to Play", LEFT_MODE);
+			BSP_LCD_DisplayStringAt(80, 90, (uint8_t*) "BP1 to Play", LEFT_MODE);
 			if(HAL_GPIO_ReadPin(BP1_GPIO_Port, BP1_Pin)==0){
 				game_state = 1;
 				BSP_LCD_SetFont(&Font12);
@@ -1731,7 +1729,6 @@ void game_over(void const *argument) {
 			vTaskSuspend(BadGuyHandle);
 			vTaskSuspend(PlayerHandle);
 			vTaskSuspend(PiecesHandle);
-			BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
 			BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
 			game_state = 0;
 		}}

@@ -129,10 +129,8 @@ uint8_t mechant_height = 24;
 uint8_t mechant_width = 24;
 
 uint16_t position_pieces[20] = { 0 };
-
 int8_t vies = 3;
 char damage_cooldown = 0;
-char game_state = 0;
 
 /* USER CODE END 0 */
 
@@ -199,9 +197,13 @@ int main(void) {
 	BSP_LCD_DisplayOn();
 	BSP_LCD_SelectLayer(1);
 	BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
+	BSP_LCD_SetFont(&Font12);
+	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 	BSP_LCD_SetBackColor(LCD_COLOR_LIGHTBLUE);
 
-
+	// ============== affichage sol
+	BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
+	BSP_LCD_FillRect(0, HAUTEUR_SOL, 480, 272 - HAUTEUR_SOL);
 
 	// ===============  creation des blocs ==================
 	blocs[1] = 1 + (7 << 8) + (6 << 4);
@@ -216,7 +218,18 @@ int main(void) {
 	blocs[8] = 1 + (9 << 8) + (3 << 4);
 	blocs[9] = 1 + (8 << 8) + (3 << 4);
 
-
+	BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
+	int iterateur_blocs = 0;
+	for (iterateur_blocs = 0;
+			iterateur_blocs < sizeof(blocs) / sizeof(blocs[0]);
+			iterateur_blocs += 1) {
+		if ((blocs[iterateur_blocs] & (15)) != 0) {
+			BSP_LCD_FillRect(
+					((blocs[iterateur_blocs] >> 8) & (255)) * blocs_size,
+					blocs_size * ((blocs[iterateur_blocs] >> 4) & (15)),
+					blocs_size, blocs_size);
+		}
+	}
 
 	// ======== les pieces =========
 
@@ -236,7 +249,23 @@ int main(void) {
 	position_pieces[9] = 2 + (9 << 8) + (8 << 4);
 	position_pieces[10] = 1 + (17 << 8) + (8 << 4);
 	position_pieces[11] = 1 + (15 << 8) + (8 << 4);
-
+	for (iterateur_blocs = 0;
+			iterateur_blocs
+					< sizeof(position_pieces) / sizeof(position_pieces[0]);
+			iterateur_blocs += 1) {
+		if ((position_pieces[iterateur_blocs] & (15)) != 0) {
+			if ((position_pieces[iterateur_blocs] & (15)) == 2)
+				BSP_LCD_SetTextColor(LCD_COLOR_RED);
+			else if ((position_pieces[iterateur_blocs] & (15)) == 1)
+				BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
+			BSP_LCD_FillRect(
+					((position_pieces[iterateur_blocs] >> 8) & (255))
+							* (blocs_size) + blocs_size / 4,
+					blocs_size
+							* ((position_pieces[iterateur_blocs] >> 4) & (15))
+							+ blocs_size / 4, blocs_size / 2, blocs_size / 2);
+		}
+	}
 
 	BSP_TS_Init(BSP_LCD_GetXSize(), BSP_LCD_GetYSize());
 
@@ -285,9 +314,7 @@ int main(void) {
 	BadGuyHandle = osThreadCreate(osThread(BadGuy), NULL);
 
 	/* USER CODE BEGIN RTOS_THREADS */
-	vTaskSuspend(BadGuyHandle);
-	vTaskSuspend(PlayerHandle);
-	vTaskSuspend(PiecesHandle);
+	/* add threads, ... */
 	/* USER CODE END RTOS_THREADS */
 
 	/* Start scheduler */
@@ -1643,9 +1670,9 @@ void player(void const *argument) {
 			cooldown_counter = 0;
 			damage_cooldown = 0;
 		}
-		BSP_LCD_FillRect((uint16_t) position_joueur[0],
-				(uint16_t) position_joueur[1], joueur_width, joueur_height);
-		//BSP_LCD_DrawBitmap(position_joueur[0], position_joueur[1], mario_basic_bits);
+		//BSP_LCD_FillRect((uint16_t) position_joueur[0],
+				//(uint16_t) position_joueur[1], joueur_width, joueur_height);
+		BSP_LCD_DrawBitmap(position_joueur[0], position_joueur[1], mario_basic_bits);
 		taskEXIT_CRITICAL();
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
@@ -1668,73 +1695,9 @@ void game_over(void const *argument) {
 	const TickType_t xFrequency = 20;
 	xLastWakeTime = xTaskGetTickCount();
 
-	BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
-
 	/* Infinite loop */
 	for (;;) {
-		if(game_state == 0)
-		{
 
-			BSP_LCD_SetFont(&Font24);
-			BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-			BSP_LCD_DisplayStringAt(145, 130, (uint8_t*) "BP1 to Play", LEFT_MODE);
-			if(HAL_GPIO_ReadPin(BP1_GPIO_Port, BP1_Pin)==0){
-				game_state = 1;
-				BSP_LCD_SetFont(&Font12);
-				vTaskResume(BadGuyHandle);
-				vTaskResume(PlayerHandle);
-				vTaskResume(PiecesHandle);
-				BSP_LCD_SelectLayer(1);
-				BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
-				BSP_LCD_SetBackColor(LCD_COLOR_LIGHTBLUE);
-			}
-		}
-		if(game_state == 1)
-		{
-			// ============== affichage sol
-				BSP_LCD_SetTextColor(LCD_COLOR_GREEN);
-				BSP_LCD_FillRect(0, HAUTEUR_SOL, 480, 272 - HAUTEUR_SOL);
-			// ===== affichage bloc
-			BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
-			int iterateur_blocs = 0;
-			for (iterateur_blocs = 0;
-					iterateur_blocs < sizeof(blocs) / sizeof(blocs[0]);
-					iterateur_blocs += 1) {
-				if ((blocs[iterateur_blocs] & (15)) != 0) {
-					BSP_LCD_FillRect(
-							((blocs[iterateur_blocs] >> 8) & (255)) * blocs_size,
-							blocs_size * ((blocs[iterateur_blocs] >> 4) & (15)),
-							blocs_size, blocs_size);
-				}
-			}
-			//================affichage piece
-			for (iterateur_blocs = 0;
-					iterateur_blocs
-							< sizeof(position_pieces) / sizeof(position_pieces[0]);
-					iterateur_blocs += 1) {
-				if ((position_pieces[iterateur_blocs] & (15)) != 0) {
-					if ((position_pieces[iterateur_blocs] & (15)) == 2)
-						BSP_LCD_SetTextColor(LCD_COLOR_RED);
-					else if ((position_pieces[iterateur_blocs] & (15)) == 1)
-						BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-					BSP_LCD_FillRect(
-							((position_pieces[iterateur_blocs] >> 8) & (255))
-									* (blocs_size) + blocs_size / 4,
-							blocs_size
-									* ((position_pieces[iterateur_blocs] >> 4) & (15))
-									+ blocs_size / 4, blocs_size / 2, blocs_size / 2);
-				}
-			}
-
-			if(vies < 0){
-
-			vTaskSuspend(BadGuyHandle);
-			vTaskSuspend(PlayerHandle);
-			vTaskSuspend(PiecesHandle);
-			BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
-			BSP_LCD_Clear(LCD_COLOR_LIGHTBLUE);
-			game_state = 0;
-		}}
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
 	}
 	/* USER CODE END game_over */
@@ -1941,7 +1904,11 @@ void badguy(void const *argument) {
 				damage_cooldown = 1;
 			}
 		}
-
+		if(vies < 0){
+			vTaskSuspend(PlayerHandle);
+			BSP_LCD_SetTextColor(LCD_COLOR_LIGHTBLUE);
+			BSP_LCD_FillRect((uint16_t) position_joueur[0], (uint16_t) position_joueur[1],
+					joueur_width, joueur_height);}
 		taskEXIT_CRITICAL();
 
 		vTaskDelayUntil(&xLastWakeTime, xFrequency);
