@@ -1674,7 +1674,7 @@ void game_over(void const *argument) {
 	for (;;) {
 		if(game_state == 0)
 		{
-
+			vies = 3;
 			BSP_LCD_SetFont(&Font24);
 			BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
 			BSP_LCD_DisplayStringAt(145, 130, (uint8_t*) "BP1 to Play", LEFT_MODE);
@@ -1937,7 +1937,12 @@ void badguy(void const *argument) {
 				|| (position_joueur[1] >= mechant_y + mechant_height)
 				|| (position_joueur[1] + joueur_height <= mechant_y))) {
 			if (damage_cooldown == 0) {
-				vies = vies - 1;
+				if (joueur_height == 32)
+				{
+					joueur_height = 24;
+				}
+				else
+					vies = vies - 1;
 				damage_cooldown = 1;
 			}
 		}
