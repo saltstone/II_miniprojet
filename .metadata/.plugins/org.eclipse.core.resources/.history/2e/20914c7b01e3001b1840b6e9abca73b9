@@ -129,7 +129,6 @@ uint8_t mechant_height = 24;
 uint8_t mechant_width = 24;
 
 uint16_t position_pieces[20] = { 0 };
-int8_t compteur_piece_overall = 0;
 
 int8_t vies = 3;
 char damage_cooldown = 0;
@@ -1676,33 +1675,9 @@ void game_over(void const *argument) {
 		if(game_state == 0)
 		{
 			vies = 3;
-			compteur_piece_overall = 0;
 			BSP_LCD_SetFont(&Font24);
 			BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
 			BSP_LCD_DisplayStringAt(145, 130, (uint8_t*) "BP1 to Play", LEFT_MODE);
-			position_joueur[0]= 0;
-			position_joueur[1]= HAUTEUR_SOL - joueur_height;
-			position_ = 300;
-			;
-			float mechant_y = HAUTEUR_SOL - mechant_height;
-
-			BSP_LCD_SetTextColor(LCD_COLOR_YELLOW);
-			position_pieces[0] = 1 + (7 << 8) + (5 << 4);
-			position_pieces[1] = 1 + (6 << 8) + (5 << 4);
-			position_pieces[2] = 1 + (5 << 8) + (5 << 4);
-
-			position_pieces[3] = 1 + (8 << 8) + (2 << 4);
-			position_pieces[4] = 1 + (9 << 8) + (2 << 4);
-			position_pieces[5] = 1 + (10 << 8) + (2 << 4);
-
-			position_pieces[6] = 1 + (11 << 8) + (5 << 4);
-			position_pieces[7] = 1 + (12 << 8) + (5 << 4);
-			position_pieces[8] = 1 + (13 << 8) + (5 << 4);
-
-			position_pieces[9] = 2 + (9 << 8) + (8 << 4);
-			position_pieces[10] = 1 + (17 << 8) + (8 << 4);
-			position_pieces[11] = 1 + (15 << 8) + (8 << 4);
-
 			if(HAL_GPIO_ReadPin(BP1_GPIO_Port, BP1_Pin)==0){
 				game_state = 1;
 				BSP_LCD_SetFont(&Font12);
@@ -1751,7 +1726,7 @@ void game_over(void const *argument) {
 				}
 			}
 
-			if((vies < 0)||(compteur_piece_overall > 10)){
+			if(vies < 0){
 
 			vTaskSuspend(BadGuyHandle);
 			vTaskSuspend(PlayerHandle);
@@ -1787,7 +1762,6 @@ void pieces(void const *argument) {
 	uint16_t piece_y = 0;
 
 	uint8_t piece_compteur = 0;
-
 	char text[12];
 
 	/* Infinite loop */
@@ -1811,12 +1785,7 @@ void pieces(void const *argument) {
 					&& ((position_pieces[iterateur_piece_collision] & 15) != 0)) {
 
 				if ((position_pieces[iterateur_piece_collision] & (15)) == 1)
-				{
 					piece_compteur = piece_compteur + 1;
-					taskENTER_CRITICAL();
-					compteur_piece_overall = compteur_piece_overall + 1;
-					taskEXIT_CRITICAL();
-				}
 				else if ((position_pieces[iterateur_piece_collision] & (15))
 						== 2) {
 					taskENTER_CRITICAL();
